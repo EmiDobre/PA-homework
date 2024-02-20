@@ -1,0 +1,125 @@
+DOBRE EMILIA ILIANA - 323 CB
+
+         ->Supercomputer<-
+
+    Fiecare task l-am considerat drept un nod intr-un graf de o anumita culoare in functie de cate seturi de date
+    foloseste:
+    nodurile albastre pentru set de date 1, nodurile rosii pentru set de date 2.
+    Problema se reduce la a gasi o sortare topologica astfel incat sa minimizez schimbarea culorilor pe cat posibil.
+
+    Implementare:
+        * daca am doar noduri de aceeasi culoare => nu mai citesc lista de adiacenta, indiferent de soratrea topologica
+        voi avea rezultat 0
+        * daca am noduri de culori diferite folosesc un algoritm de sortare topologica pe 2 cozi in functie de cele 2
+        culori (algoritmul lui khan modificat cu noua constrangere)
+
+        --Sortare topologica--
+        * sortarea topologica pe coada presupune a stii gradul de intrare al unui nod in graf, cu alte cuvinte,
+        cate noduri depind de nodul curent
+        * nodurile care la inceput au gradul de intrare 0 le consider noduri orfane, acestea intra in coada in functie
+        de culoarea lor
+        * algoritmul nemodificat al lui khan:
+            -> presupune parcugerea cozii de noduri orfane pana cand devine goala
+            -> pentru fiecare copil al nodurilor din coada se scade gradul de intrare pentru ca parintele sau se afla
+            inaintea sa, deci dependinta de el
+            se sterge, se adauga in coada nodurile care ajung sa aiba gradul de intrare 0
+
+        --Culori--
+        * intuitia a fost ca numarul de context switchuri se schimba in functie de cum aleg sa asez "primii" orfani
+        deoarece ei nu au dependinte
+        * astfel am luat 2 cozi: rosu albastru, si alte 2 cozi de orfani rosu si albastru (voi repeta algoritmul de 2 ori)
+        * acestea se initializeaza cu nodurile de culoarea lor cu grad de intrare 0
+        * modific algoritmul lui khan (topSortColour) astfel:
+            - incep cu o culoare arbitrare si scot nodul
+            - scad gradul de intrare al copiilor si in functie de ce culoare are cel cu gradul 0 il bag in coada
+            corespunzatoare
+            - cand coada ajunge goala, am retinut culoarea sa initiala si schimb culoarea cozii, incep sa scod noduri
+            din coada cealalta
+            - la schimbarea culorii cozii se mareste nr de context switchuri
+
+        * pentru ca alegerea cozii de inceput conteaza pentru minimizarea nr de context switchuri, fac sortarea
+        incepand mai intai cu coada rosie de primii orfani, apoi pentru coada albastra de orfani
+        * rezultatul e minimul dintre context siwtchuri obtinute pe cele 2 cazuri
+        * uneori nu am ambele cozi pline de la inceput, astfel voi obtine pentru cozile goale -1 si rezultatul
+        va fi doar sortarea pe coada de culoare care nu e goala
+
+    Analiza Complexitate temporala:
+        * Parcurgere indegree: O(N)                                             |
+        * 2 * TopSOrtColour: operatii pe coada: O(1)            |               |
+                         voi avea toate nodurile in coada       | 2 * O(N+M)    | O(N+M)
+                         => scoatere din coada: O(N)            |               |
+                         parcurgere copii maxim M copii: O(M)   |               |
+
+
+
+        ->Ferate<-
+
+    Problema este echivalenta cu a conecta toate componentele tari conexe ale grafului ( unde nu sunt deja sa adaug
+    muchii in plus).
+    Astfel avand fiecare componenta conexa cu nodurile sale, trebuie sa verific daca fiecare nod din scc are conexiuni/muchii
+    cu alte scc uri, daca are nu mai trebuie sa adaug muchie auxiliara. Se adauga muchii auxiliare pentru scc urile
+    izolate diferite de sursa.
+
+    Implementare:
+        * am folosit algoritmul Tarjan de la laborator in cadrul caruia am retinut pentru fiecare nod din
+        ce componenta conexa face parte prin which_scc
+        * avand componentele conexe acum trebuie sa vad care sunt cele izolate, si care e componenta conexa
+        ce contine sursa
+        * parcurg fiecare scc si parcurg fiecare nod din acesta, scopul fiind sa numar muchiile din alte scc uri
+        care intra in nodurile din scc ul curent
+
+        **scc izolat**
+            - toate nodurile care il alcatuiesc au parinti (noduri care intra in ele) care apartin din acelasi scc
+            - pentru fiecare scc numar conexiunile/muchiile pe care le are cu alte scc uri, acesta se incrementeaza
+            cand dau de un nod care are muchie cu altul din alt scc
+
+        **nevoie de muchie**
+            1) scc izolat, care nu contine sursa intrucat trebuie sa adaug o muchie care sa intre intr-unul din nodurile
+            sale
+            2) scc izolat, dar care contine nodul sursa => problema spune sa pornesc din nodul sursa si sa creez drum
+                                                            pana la restul
+                                                        => astfel nu trebuie sa adaug o muchie intr-un nod din acest scc
+                                                        => practic aici este deja adaugata o muchie *spre* alt scc
+                                                           de la cazul 1
+
+
+    Analiza Complexitate temporala:
+        * SCC cu Tarjan:        O(N+M)      |
+        * Parcurgere fiecare                |       O(N+M)
+          nod din fiecare SCC:  O(N+M)      |
+
+
+
+        ->Magazin<-
+
+    Depozitul care primeste coletele de la un depozit D dupa E expedieri e echivalentul a afla ce nod
+    se afla la o distanta E de nodul sursa (depozitul sursa). Astfel parcurg dfs graful incepand de la primul
+    nod deoarece aceste nu primeste colete de la niciun alt depozit. Avand ordinea dfs a nodurilor intr-o lista
+    raspunsul cautat se afla la indexul sursei + e in lista , insa trebuie tinut cont de numarul total de copii
+    ai nodului sursa (acesta neputand sa ajunga in realitate la coletul aflat la acel index).
+
+    Implementare:
+        * am folosit o parcugere dfs pentru a initializa lista cu ordinea nodurilor in dfs, si a calcula
+        si copii pentru fiecare nod pe care ii retin intr-un vector
+        * pentru ca in Java indexOf este prea lent si are complexitate O(n), retin intr-un vector index
+        fiecare nod pe ce pozitie se afla in ordinea DFS
+        * la final, parcurg toate intrebarile si aflu nodul destinatie din lista in cazul in care se poate
+        ajunge la acesta
+
+
+    Analiza Complexitate temporala:
+        * DFS:          O(2*N-1)    |   O( N + max(Q, N-1) )
+        * aflare dest:  O(Q)        |
+
+
+        ->Teleportare<-
+
+    Citesc graful drept o lista de adiacenta de noduri de tip nod. adj[ sursa ] = nodul destinatie unde un nod
+    are valoarea nodului in sine, costul de la sursa la el si portal care este 0 pentru nodurile normale.
+    Am incercat sa rezolv problema modificand algoritmul Dijkstra astfel incat un nod este disponibil doar
+    daca acesta este nod normal, nu are portal, sau daca are portal acesta este disponibil doar daca costul(timpul)
+    pana in momentul de fata este un multiplu de valoarea portalului.
+
+    Analiza Complexitate temporala:
+        * Dijkstra:  O((N+M)logN)      |
+        + modificari:O(1)              |    O((N+M)logN)
