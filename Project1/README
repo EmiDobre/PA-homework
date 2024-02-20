@@ -1,0 +1,192 @@
+DOBRE EMILIA ILIANA - 323 CB
+
+         ->Feribot<-
+
+    C - costul cautat este maximul dintre costurile tuturor feriboturilor, unde aceste feriboturi au un cost impartit eficient intre ele, adica minim
+    * In total am un interval de greutati in care se gasesc toate masinile: [cea mai usoara, toate-masinile-adunate]
+    * Acesta este spatiul de selectie pentru costul unui singur feribot, adica si spatiul in care se va afla C
+
+    Implementare:
+        * Caut prin costurile posibile acest cost maxim dintre toate dar care sa respecte conditiile impuse si verific
+        daca pot sa umplu cu el feriboturile astfel incat sa nu mai am masini si sa nu am feriboturi goale
+
+        * Incerc sa folosesc cat mai eficient feriboturile pentru costul ales random din interval si anume cost_max. Parcurg toate masinile, iar pentru a salva din timpul folosit
+        ma opresc daca masina este mai grea decat cat am presupus ca am costul maxim pe un feribot. Atunci inseamna ca as avea nevoie de mai multe feriboturi decat am.
+
+        * Adaug masini la costul_current - costul feribotului curent pana cand depasesc maximul impus. Inseamna ca trebuie sa maresc nr de feriboturi folosite, si sa resetez costul curent al feribotului
+        curent, acesta incepand cu masina grea
+
+        * Daca nu mai am feriboturi inseamna ca am nevoie de un cost mai mic decat cel curent => caut in stanga intervalului => in [left...cost_max]
+        * Daca nu mai am masini inseamna ca as putea transporta mai eficient masinile pe feriboturile disponibile deci incerc sa verific cu un cost mai mare => in [cost_max, right]
+        * La final, rezultatul va fi left sau right fiind egale si va reprezenta intr-adevar costul maxim al unui feribot a.i conditiile celelalte sa fie respectate.
+
+    Analiza Complexitate temporala:
+        *Iau random un cost din cele posibile - pt ca fac binary search aleg  mijlocul intervalului                           | O(log CostMaxim)  |
+                                                                                                                                              | O(nr_masini * logCostMax) - cel mai bun timp
+        *Incerc sa umplu un feribot cu masini care sa atinga costul, daca nu reusesc - inseamna ca trebuie sa incerc alt cost | O(nr_masini)      |
+
+
+
+        ->NOSTORY<-
+
+    Task1:
+        Am 2*N numere si 2 siruri A si B fiecare cu N numere, acestea sunt impartite in perechi (A[i], B[i]). Consider ca o pereche este o familie si sunt astfel N familii,
+        fiecare cu cate 2 membrii unul din A unul din B. Pot schimba familiile intre ele si sa obtin unele noi. Suma este suma celor mai mari membrii din fiecare familie.
+        Pentru ca pot face un numar infinit de mutari, adica schimbat familii este de ajuns pentru primul task sa sortez toate persoanele, indiferent de familie, descrescator
+        dupa valoare.
+
+        Cea mai mare suma se obtine din suma primelor N persoane din acest vector sortat cu quickSort pentru un timp cat mai bun.
+
+    Task2:
+        Pornind de la ideea de la Task1, ma folosesc de acelasi vector de persoane sortate descrescator dupa varsta(valoare).
+        In total trebuie sa am n familii. O persoana are o varsta si o familie pe care o retin in structura.
+        Vreau sa iau primele n familii din vectorul sortat pentru o suma maxima dar nu este posibil mereu din
+        cauza mutarilor disponibile. In suma intra doar cea mai in varsta persoana din familie.
+
+        Implementare:
+
+            *parcurg vectorul de persoane sortat dupa varsta descresctor,
+            *ex, pt perechile intiiale (12,3), (1,14) (8,10) (23,11) (2, 6), (18, 21), primul membru e din a dat si al doilea din b
+            *familiie sunt:             0       1       2       3       4       5
+            *o persoana este astfel definitta de vartsa ei si familie - indexul
+            *dupa sortarea vectorului de persoane disponibile, acesta este:
+            (23-fam 4); (21-fam 5); (18-fam 5); (14-fam 1); (12-fam0); (11-fam 3); (10-fam 2); (8-fam 2); (6-fam 4); (3-fam 0); (2-fam 4); (1-fam 1)
+
+            *adun pana ce ating n perechi ( n familii) analizate
+                    - daca am un membru dintr-o familie din care nu s-a ales, il adaug la suma, numar de perechi/familii ca am ales dintr-o familie
+
+                    - daca am un membru dintr-o familie din care s-a ales deja si inca nu am toate cele n perechi analizate (actualizate)
+                        atunci trebuie sa fac o mutare pentru ca numarul e mai mare decat celelalte care urmeaza dupa el
+                        => folosesc o mutare disponibila, actualizez nr de perechi anallizate
+
+        Analiza Complexitate temporala:
+
+            *Task1: quicksort + o parcurgere pana la n => O(nlogn)
+            *Task2: quicksort + o parcurgere pana la n => O(nlogn)
+
+        ->SUSHI<-
+
+    Task1:
+        Ca in cazul problemei cu rucsacul din laborator, trebuie sa maximizez o suma de valori. Fiecare platou are o valoare ce se va aduna la suma daca acesta se alege.
+        Valoarea unui plaotu este suma notelor primite de la fiecare prieten - retinute in vectorul reviews_plate[plate - 1] pt plaotul plate.
+        Constrangerea este bugetul maxim dat n*x.
+
+        Implementare:
+            *dinamica este dp[i][j] = suma valorilor reviewurilor folosind primele i platouri si avand un buget j
+            *cazul de baza: initializarea matricei - daat de cazul in care nu aleg niciun platou <=> "aleg plaotul 0"
+            *caz general:   folosesc sau nu platoul curent (decizie luata dupa conditie)
+                            -inductiv- presupun ca am toate valorile pana la platoul curent si bugetul curent
+                                     - daca nu am bani pentru platou sau suma nu se maximizeaza nu folosesc platoul curent
+                                     - daca il folosesc se adauga la suma de pana acum
+
+                                     - dp[plate][budget] = max( dp[plate-1][budget], suma_daca_folosesc_platoul_curent)
+                                     - suma_cu_platoul_curent_o data = 1 * reviews[plate-1] (valoarea sa)
+                                                                                + dp[plate-1][budget - pret_platou] (suma optima pentru platourile pana in cel
+                                                                                                                        curent, la bugetul ramas)
+            *solutie:       dp[m][n*x] = problema initiala
+
+    Task2:
+        Dinamica se pastreaza, singura modificare apare la cazul general in momentul in care am de ales de cate ori sa aleg plaotul: 0 ori, 1 data, de 2 ori
+        Modificari caz general:
+            *pentru bugetul curent, daca nu am bani de niciun platou, initializez pt platoul curent suma cu suma obtinuta pana acum la restul platourilor la acest buget
+            *am buget pentru 2 platouri: -verific daca este benefic sa le iau pe ambele
+                                         -compar cu valoarea curenta, cea obtinuta in cazul in care aleg doar un platou si aleg maximul
+                                         -dp[plate][budget] = max( val_anterioara, sum 1platou, sum 2 platouri)
+            *nu am buget de 2 platouri, dar am de un platou:
+                                        aceeasi comparatie ca la task1
+            *sum 1 platou: idem task 1
+            *sum 2 platouri: valoarea sa * 2 + dp[plate-1][budget - 2*pret platou]
+
+    Task3:
+        Pornind de la ideea de la task 2, modificarea apare la adaugarea unei noi constrangeri: maxim N platouri folosite ceea ce duce la adaugarea unei noi dimensiuni pentru problema.
+        Astfel subproblema este:  dp[i][j][k] - suma notelor pentru primele i platouri avand un buget j SI folosind maixm k platouri
+
+        Implementare:
+            *cazul de baza: se pastreaza - pentru primele 0 platouri, suma este 0 pentru orice buget si folosind maxim oricate platouri
+            *cazul general: - se pastreaza aceeasi regula ca la task2, se alege dupa aceeasi conditie doar ca valorile sunt distribuite acum intr-o matrice 3d
+                            - pentru platoul curent, bugetul curent, am folosit un nr "use" de plaoturi in total
+                            - dp[plate][budget][use] = max(val_curenta, suma_daca aleg 1 platou, suma daca aleg 2 platouri)
+
+                            - daca aleg 1 platou: suma posibila = valoarea_platoului + suma obtinuta pentru platourile pana in cel curent
+                                                                                        la bugetul ramas folsoind acum maxim use - 1 platouri
+                            - daca aleg 2 platouri: bugetul scade cu suma platoului de 2 ori si nr plaoturi folosite cu 2: use - 2
+            *soltuie:   dp[m][n*x][n] = problema initiala
+
+        Analiza Complexitate temporala:
+            *complexitatea va fi egala cu dimensiunea matricei dp
+            *Task1: O(m*n*X)
+            *Task2: O(m*n*X)
+            *Task3: O(m*n*X*n)
+
+
+
+        ->SEMNALE<-
+
+    Task1:
+        Pornind de la modul natural de a crea combinarile de numere, observ de exemplu pentru x = 3 biti de 0, y = 2 biti de 1:
+            -spatiul de selectie: {0,0,0,} si {1,1}
+        Conditia este ca se accepta doar semnalel cu 0 biti de 1 consecutivi: daca contine 1 semnalul ar arata astfel: ....010... sau ...01 sau 10....
+        Pot construi semnalele ca pe bucati: se termina in 0, se termina in 1 - adica in 01 pentru a se respecta conditia
+        Astfel orice semnal e inainte va fi o subproblema ce va respecta conditia, si se va crea un semnal nou cu 0 la final sau 01 la final.
+        Numarul de semnale totale va fi suma dintre cele 2 subprobleme.
+
+        Exemplu: {0,0,0} {1,1} => 1) se temrina in 0 =>  [subproblmea cu  {0,0} {1,1} ] | 0 , la semnalele din subproblema x = 2, y = 1 se adauga 0 la final
+                               => 2) se termina in 1 =>  [ subproblema cu {0,0} {1}   ] |01, la semnalel formate din submultimile date se adauga la final 01 si am noi semnale
+
+       Implementare:
+            *dinamica:   dp[i][j][k] - nr de semnale care au i biti de 0, j biti de 1 si de termina in k
+                         - k = 0 => semnale terminate in "0";
+                         - k = 1 => semnale terminate in "01"
+
+            *initializari elementare pt a descrie dinamica:
+                - cazul de baza:    prima subproblema este {0} {1}
+                - corner case 1:  am 1 bit de 0 si multi biti de 1 => {0} {1,1} si {0} {1,1,1...}
+                - corner case 2:  am 1 bit de 1 si multi biti de 0 => {0,0,...} si {1}
+                - corner case-urile apar pentru ca nu am subproblema cu 0 biti de 1 si 0 biti de 0 => [subpb { } {1,1,...}] | 0 sau [subpb {0,..0} { }]| 01
+
+            *caz general:
+                - problmea initiala {0,0,0} {1,1}   = (  subpb cu {0,0} {1,1} | "0" ) + ( subpb cu {0,0} {1} | "01" )
+                                                    = la semnalele subproblemei se adauga la final "0" sau "01" si se obtin semnalele noi
+                                                    = numarul total fiind suma din cate semnale se termina in 0 si cate in 01
+                - se termina in 0  => depinde de subproblema cu 1 bit de 0 mai putin
+                                   => {0,0,0} {1,1} in "0"  =(  subpb cu {0,0} {1,1}  | "0" ) - unde subproblema este suma dintre nr semnale in 0 si nr semnale in 01
+                                   => dp[bits_0][bits_1][0] = dp[bits_0 - 1][bits_1][0] + dp[bits_0 - 1][bits_1][1]
+
+                - se termina in 01 => depinde de subproblema cu 1 bit de 0 mai putin si 1 bit de 1 mai putin
+                                   => {0,0,0} {1,1} in "01" =  ( subpb cu {0,0} {1} | "01" )
+                                   => dp[bits_0][bits_1][1] = dp[bits_0 - 1][bits_1 - 1][0] + dp[bits_0 - 1][bits_1 - 1][1]
+
+            *solutie: suma pentru numarul de semnale in 0 si cele in 1 pentru conditiile initiale
+
+    Task2:
+        Pornind de la aceeasi idee ca la task2 aici se schimba restrictia, deci dinamica ramane aceeasi, doar se mareste domeniul de posibilitati.
+        Putem folosi maxim 2 de 1 consecutivi deci pot avea semnale ce se termina in 0, in 01 si in 011, semnalul mai scurt care este inainte respecta conditiile de baza ale problemei
+        Tot ce se schimba e initializarea matricei, acum se aduna 3 subprobleme in loc de 2.
+
+        Implementare:
+            *dinamica: dp[i][j][k] - nr de semnale care au i biti de 0, j biti de 1 si de termina in k
+                                     - k = 0 => semnale terminate in "0";
+                                     - k = 1 => semnale terminate in "01"
+                                     - k = 2 => semnale terminate in "011"
+
+            *initializari elementare pt a descrie dinamica:
+                            - cazul de baza:  prima subproblema este {0} {1}
+                            - apar ambele tipuri de corner case doar ca se modifica valorile, si trebuie discutat si pentru k = 2
+                            - corner case urile discuta subproblemele pentru care nu mai am biti de 1 sau 0 => { } {1..1} sau {0..0} { }
+
+            *caz general:
+                -problema initiala {0,0,0} {1,1} = suma celor 3 subprobleme terminate in "0", in "01" in "011"
+                                                 = (subpb cu {0,0} {1,1} | "0") + (subpb cu {0,0} {1} | "01")
+                                                    + (subpb cu {0,0} { } | "011")
+                - pentru semnalul curent cu bits_0 si bits_1 calculez nr de semnale care se termina  in "0", "01", "011"
+                - pt "0":  sum de : subproblema cu 1 bit de 0 mai putin care se termina in 0, 01, 011
+                - pt "01": sum de : subproblema cu 1 bit de 0 mai putin, 1 bit de 1 mai putin si care se termina in 0, 01, 011
+                - pt "011" sum de : subproblema cu 1 bit de 0 mai putin, 2 bit de 1 mai putin si care se termina in 0, 01, 011
+
+            *solutie: suma celor 3 subprobleme
+
+
+        Analiza Complexitate temporala:
+            *complexitatea va fi egala cu dimensiunea matricei dp
+            *Task1: O(x*y*2)
+            *Task2: O(x*y*3)
